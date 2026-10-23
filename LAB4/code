@@ -1,0 +1,74 @@
+import random
+
+N = 4
+
+def cost(state):
+    h = 0
+    for i in range(N):
+        for j in range(i + 1, N):
+            if state[i] == state[j] or abs(state[i] - state[j]) == abs(i - j):
+                h += 1
+    return h
+
+def print_board(state):
+    for r in range(N):
+        for c in range(N):
+            print("Q" if state[c] == r else ".", end=" ")
+        print()
+
+def hill_climbing():
+    attempts = 0
+
+    while True:
+        attempts += 1
+        current = [random.randint(0, N - 1) for _ in range(N)]
+
+        print("\nInitial state:", [x + 1 for x in current])
+        print("Current cost:", cost(current))
+
+        while cost(current) != 0:
+            current_cost = cost(current)
+            neighbors = []
+
+            print("\nCurrent state:", [x + 1 for x in current])
+            print("Current cost =", current_cost)
+            print("Neighbor states and costs:")
+
+            for col in range(N):
+                for row in range(N):
+                    if row == current[col]:
+                        continue
+
+                    neighbor = current.copy()
+                    neighbor[col] = row
+                    h = cost(neighbor)
+
+                    neighbors.append((h, neighbor))
+                    print(
+                        f"Move column {col + 1} to row {row + 1}: "
+                        f"{[x + 1 for x in neighbor]}, cost = {h}"
+                    )
+
+            best_cost = min(h for h, state in neighbors)
+
+            if best_cost >= current_cost:
+                print("Local minimum reached. Restarting...")
+                break
+
+            best_neighbors = [
+                state for h, state in neighbors if h == best_cost
+            ]
+            current = random.choice(best_neighbors)
+
+            print("Selected next state:", [x + 1 for x in current])
+            print("New cost =", cost(current))
+
+        if cost(current) == 0:
+            print("\nGoal configuration reached!")
+            print("Goal state:", [x + 1 for x in current])
+            print("Goal cost =", cost(current))
+            print_board(current)
+            print("Random restarts:", attempts - 1)
+            break
+
+hill_climbing()
