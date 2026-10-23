@@ -1,0 +1,61 @@
+import random
+import math
+
+N = 8
+
+def cost(state):
+    h = 0
+    for i in range(N):
+        for j in range(i + 1, N):
+            if state[i] == state[j] or abs(state[i] - state[j]) == abs(i - j):
+                h += 1
+    return h
+
+def simulated_annealing():
+    current = [random.randint(0, N - 1) for _ in range(N)]
+    current_cost = cost(current)
+
+    T = 100
+    cooling_rate = 0.99
+    step = 0
+
+    while T > 0.01 and current_cost != 0:
+        neighbor = current.copy()
+
+        col = random.randint(0, N - 1)
+        row = random.randint(0, N - 1)
+
+        while row == current[col]:
+            row = random.randint(0, N - 1)
+
+        neighbor[col] = row
+        neighbor_cost = cost(neighbor)
+
+        delta = neighbor_cost - current_cost
+
+        if delta < 0 or random.random() < math.exp(-delta / T):
+            current = neighbor
+            current_cost = neighbor_cost
+
+        if step % 100 == 0:
+            print("Step:", step,
+                  "Cost:", current_cost,
+                  "Temperature:", round(T, 2))
+
+        T *= cooling_rate
+        step += 1
+
+    print("\nFinal State:", [x + 1 for x in current])
+    print("Final Cost:", current_cost)
+
+    if current_cost == 0:
+        print("Goal configuration reached!")
+    else:
+        print("Goal not reached. Run again.")
+
+    for r in range(N):
+        for c in range(N):
+            print("Q" if current[c] == r else ".", end=" ")
+        print()
+
+simulated_annealing()
