@@ -1,0 +1,82 @@
+
+from itertools import product
+
+# Propositional symbols
+symbols = ["P", "Q", "R"]
+
+# Logical implication: P -> Q is equivalent to (not P) or Q
+def implies(a, b):
+    return (not a) or b
+
+# Knowledge Base:
+# 1. P -> Q
+# 2. Q -> R
+# 3. P
+
+def knowledge_base(model):
+    P = model["P"]
+    Q = model["Q"]
+    R = model["R"]
+
+    return (
+        implies(P, Q)
+        and implies(Q, R)
+        and P
+    )
+
+# Query: R
+def query(model):
+    return model["R"]
+
+# Truth-table enumeration algorithm
+def tt_entails(symbols, kb, alpha):
+    print("\nTRUTH TABLE")
+    print("-" * 65)
+    print("P\tQ\tR\tP->Q\tQ->R\tKB\tQuery")
+
+    entailment = True
+    counterexample_found = False
+
+    # Generate all possible truth assignments
+    for values in product([True, False], repeat=len(symbols)):
+        model = dict(zip(symbols, values))
+
+        P = model["P"]
+        Q = model["Q"]
+        R = model["R"]
+
+        kb_value = kb(model)
+        query_value = alpha(model)
+
+        def tf(value):
+            return "T" if value else "F"
+
+        print(
+            f"{tf(P)}\t{tf(Q)}\t{tf(R)}\t"
+            f"{tf(implies(P, Q))}\t"
+            f"{tf(implies(Q, R))}\t"
+            f"{tf(kb_value)}\t"
+            f"{tf(query_value)}"
+        )
+
+        # Check only models where KB is true
+        if kb_value and not query_value:
+            entailment = False
+            counterexample_found = True
+
+    print("-" * 65)
+
+    if entailment:
+        print("RESULT: KB entails the query.")
+        print("KB |= R : TRUE")
+    else:
+        print("RESULT: KB does NOT entail the query.")
+        print("KB |= R : FALSE")
+        print("A counterexample model was found.")
+
+    return entailment
+
+
+# Main program
+if __name__ == "__main__":
+    tt_entails(symbols, knowledge_base, query)
